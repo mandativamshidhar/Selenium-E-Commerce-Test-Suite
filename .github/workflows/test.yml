@@ -13,17 +13,17 @@ env:
 
 jobs:
   # ─────────────────────────────────────────────
-  # Smoke Tests — fast gate on every push
+  # Smoke Tests — Chrome
   # ─────────────────────────────────────────────
   smoke-tests:
     name: Smoke Tests (Chrome)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Chrome and Xvfb
+      - name: Install Chrome
         run: |
           sudo apt-get update -q
           sudo apt-get install -y google-chrome-stable xvfb
@@ -50,7 +50,7 @@ jobs:
 
       - name: Upload Smoke Report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: smoke-report
           path: |
@@ -65,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -76,7 +76,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Chrome and Xvfb
+      - name: Install Chrome
         run: |
           sudo apt-get update -q
           sudo apt-get install -y google-chrome-stable xvfb
@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload Report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: regression-chrome
           path: |
@@ -104,17 +104,17 @@ jobs:
             screenshots/
 
   # ─────────────────────────────────────────────
-  # Regression — Firefox
+  # Regression — Firefox (Mozilla PPA, no snap)
   # ─────────────────────────────────────────────
   regression-firefox:
     name: Regression (Firefox)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -122,10 +122,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Firefox, GeckoDriver and Xvfb
+      - name: Install Firefox from Mozilla PPA (not snap)
         run: |
+          sudo install -d -m 0755 /etc/apt/keyrings
+          wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+          echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee /etc/apt/sources.list.d/mozilla.list > /dev/null
+          echo 'Package: *
+          Pin: origin packages.mozilla.org
+          Pin-Priority: 1000' | sudo tee /etc/apt/preferences.d/mozilla > /dev/null
           sudo apt-get update -q
           sudo apt-get install -y firefox xvfb
+          firefox --version
+
+      - name: Install GeckoDriver
+        run: |
           GECKO_VER=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep tag_name | cut -d '"' -f4)
           wget -q "https://github.com/mozilla/geckodriver/releases/download/${GECKO_VER}/geckodriver-${GECKO_VER}-linux64.tar.gz"
           tar -xzf geckodriver-*.tar.gz
@@ -146,7 +156,7 @@ jobs:
 
       - name: Upload Report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: regression-firefox
           path: |
@@ -154,17 +164,17 @@ jobs:
             screenshots/
 
   # ─────────────────────────────────────────────
-  # Regression — Edge (Windows)
+  # Regression — Edge (Windows runner)
   # ─────────────────────────────────────────────
   regression-edge:
     name: Regression (Edge)
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -179,7 +189,7 @@ jobs:
 
       - name: Upload Report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: regression-edge
           path: |
@@ -202,9 +212,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Smoke Tests (Chrome)    | ${{ needs.smoke-tests.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Regression (Chrome)     | ${{ needs.regression-chrome.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Regression (Firefox)    | ${{ needs.regression-firefox.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Regression (Edge)       | ${{ needs.regression-edge.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke Tests (Chrome)  | ${{ needs.smoke-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regression (Chrome)   | ${{ needs.regression-chrome.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regression (Firefox)  | ${{ needs.regression-firefox.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regression (Edge)     | ${{ needs.regression-edge.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "HTML reports and screenshots available in workflow artifacts." >> $GITHUB_STEP_SUMMARY
