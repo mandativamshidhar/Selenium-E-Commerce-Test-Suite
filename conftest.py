@@ -110,6 +110,9 @@ def driver(request):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-gpu")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-setuid-sandbox")
+        options.add_argument("--remote-debugging-port=9222")
         drv = webdriver.Chrome(options=options)   # Selenium Manager auto-downloads
 
     elif browser == "edge":
