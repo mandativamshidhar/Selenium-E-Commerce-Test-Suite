@@ -1,3 +1,4 @@
+![CI](https://github.com/mandativamshidhar/Selenium-E-Commerce-Test-Suite/actions/workflows/test.yml/badge.svg)
 # SauceDemo BDD Test Framework
 
 A production-grade Selenium WebDriver framework using **Page Object Model (POM)** + **pytest-BDD (Gherkin)** for [saucedemo.com](https://www.saucedemo.com), with CI/CD via GitHub Actions.
