@@ -32,10 +32,9 @@ jobs:
 
       - name: Install Chrome
         run: |
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get update -q
           sudo apt-get install -y google-chrome-stable
+          google-chrome --version
 
       - name: Run Smoke Tests
         run: |
@@ -45,8 +44,6 @@ jobs:
             --html=reports/smoke-report.html \
             --self-contained-html \
             -v
-        env:
-          DISPLAY: ""
 
       - name: Upload Smoke Report
         if: always()
@@ -79,10 +76,9 @@ jobs:
 
       - name: Install Chrome
         run: |
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get update -q
           sudo apt-get install -y google-chrome-stable
+          google-chrome --version
 
       - name: Run Regression Tests
         run: |
@@ -94,8 +90,6 @@ jobs:
             -v \
             --tb=short
         continue-on-error: true
-        env:
-          DISPLAY: ""
 
       - name: Upload Report
         if: always()
