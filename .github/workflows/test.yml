@@ -31,14 +31,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Chrome
+      - name: Install Chrome and Xvfb
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y google-chrome-stable xvfb
           google-chrome --version
 
       - name: Run Smoke Tests
         run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
           pytest -m smoke \
             --browser=chrome \
             --headless \
@@ -75,14 +76,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Chrome
+      - name: Install Chrome and Xvfb
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y google-chrome-stable xvfb
           google-chrome --version
 
       - name: Run Regression Tests
         run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
           pytest -m regression \
             --browser=chrome \
             --headless \
@@ -120,10 +122,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Firefox & GeckoDriver
+      - name: Install Firefox, GeckoDriver and Xvfb
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y firefox
+          sudo apt-get install -y firefox xvfb
           GECKO_VER=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep tag_name | cut -d '"' -f4)
           wget -q "https://github.com/mozilla/geckodriver/releases/download/${GECKO_VER}/geckodriver-${GECKO_VER}-linux64.tar.gz"
           tar -xzf geckodriver-*.tar.gz
@@ -132,6 +134,7 @@ jobs:
 
       - name: Run Regression Tests
         run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
           pytest -m regression \
             --browser=firefox \
             --headless \
@@ -140,8 +143,6 @@ jobs:
             -v \
             --tb=short
         continue-on-error: true
-        env:
-          DISPLAY: ""
 
       - name: Upload Report
         if: always()
